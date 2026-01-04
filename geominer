@@ -27,6 +27,17 @@ title.Font = Enum.Font.SourceSansBold
 title.TextSize = 20
 title.Parent = mainFrame
 
+local creditsLabel = Instance.new("TextLabel")
+creditsLabel.Size = UDim2.new(1, 0, 0, 20)
+creditsLabel.Position = UDim2.new(0, 0, 1, -30)  -- Bottom of the frame
+creditsLabel.BackgroundTransparency = 1
+creditsLabel.Text = "too lazy to implement it in main gui • [J - to minimize]"
+creditsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+creditsLabel.Font = Enum.Font.SourceSansItalic
+creditsLabel.TextSize = 14
+creditsLabel.TextXAlignment = Enum.TextXAlignment.Center
+creditsLabel.Parent = mainFrame
+
 -- gilakebi
 local listenBtn = Instance.new("TextButton")
 listenBtn.Size = UDim2.new(0, 80, 0, 28)
@@ -39,7 +50,7 @@ listenBtn.TextSize = 16
 listenBtn.Parent = mainFrame
 
 local stopBtn = Instance.new("TextButton")
-stopBtn.Size = UDim2.new(0, 80, 0, 28)
+stopBtn.Size = UDim2.new(0, 90, 0, 28)
 stopBtn.Position = UDim2.new(0, 90, 0, 40)
 stopBtn.Text = "Stop listening"
 stopBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 40)
