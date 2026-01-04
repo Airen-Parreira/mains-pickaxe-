@@ -1,0 +1,560 @@
+-- variables da pachipuchobebi
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ManualOreCollectorGui"
+screenGui.Parent = PlayerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 600, 0, 340)
+mainFrame.Position = UDim2.new(0, 100, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 28)
+title.BackgroundTransparency = 1
+title.Text = "MOGVINTT"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+title.Parent = mainFrame
+
+-- gilakebi
+local listenBtn = Instance.new("TextButton")
+listenBtn.Size = UDim2.new(0, 80, 0, 28)
+listenBtn.Position = UDim2.new(0, 10, 0, 40)
+listenBtn.Text = "Listen calls"
+listenBtn.BackgroundColor3 = Color3.fromRGB(60, 180, 75)
+listenBtn.TextColor3 = Color3.new(1, 1, 1)
+listenBtn.Font = Enum.Font.SourceSansBold
+listenBtn.TextSize = 16
+listenBtn.Parent = mainFrame
+
+local stopBtn = Instance.new("TextButton")
+stopBtn.Size = UDim2.new(0, 80, 0, 28)
+stopBtn.Position = UDim2.new(0, 90, 0, 40)
+stopBtn.Text = "Stop listening"
+stopBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 40)
+stopBtn.TextColor3 = Color3.new(1, 1, 1)
+stopBtn.Font = Enum.Font.SourceSansBold
+stopBtn.TextSize = 16
+stopBtn.Parent = mainFrame
+
+local clearBtn = Instance.new("TextButton")
+clearBtn.Size = UDim2.new(0, 60, 0, 28)
+clearBtn.Position = UDim2.new(0, 180, 0, 40)
+clearBtn.Text = "Clear"
+clearBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+clearBtn.TextColor3 = Color3.new(1, 1, 1)
+clearBtn.Font = Enum.Font.SourceSansBold
+clearBtn.TextSize = 16
+clearBtn.Parent = mainFrame
+
+local ignoreBtn = Instance.new("TextButton")
+ignoreBtn.Size = UDim2.new(0, 180, 0, 28)
+ignoreBtn.Position = UDim2.new(0, 250, 0, 40)
+ignoreBtn.Text = "Ignore Yleobebi: OFF"
+ignoreBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+ignoreBtn.TextColor3 = Color3.new(1, 1, 1)
+ignoreBtn.Font = Enum.Font.SourceSansBold
+ignoreBtn.TextSize = 16
+ignoreBtn.Parent = mainFrame
+
+local ignoreYleobebi = false
+
+--search stuff
+local searchBox = Instance.new("TextBox")
+searchBox.Size = UDim2.new(0, 150, 0, 28)
+searchBox.Position = UDim2.new(0, 440, 0, 40)
+searchBox.PlaceholderText = "მოძებნე ყლეო"
+searchBox.Text = ""
+searchBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+searchBox.TextColor3 = Color3.new(1, 1, 1)
+searchBox.Font = Enum.Font.SourceSans
+searchBox.TextSize = 16
+searchBox.Parent = mainFrame
+
+local tableFrame = Instance.new("Frame")
+tableFrame.Name = "TableFrame"
+tableFrame.Size = UDim2.new(0, 580, 0, 220)
+tableFrame.Position = UDim2.new(0, 10, 0, 80)
+tableFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+tableFrame.BorderSizePixel = 0
+tableFrame.ClipsDescendants = true
+tableFrame.Parent = mainFrame
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Name = "Scroll"
+scroll.Size = UDim2.new(1, 0, 1, 0)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 10
+scroll.Parent = tableFrame
+
+local tableList = Instance.new("UIListLayout")
+tableList.Parent = scroll
+tableList.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Data
+local listening = false
+local collectedNames = {}
+local itemConn = nil
+
+-- bliad
+-- Rarity system fully rebuilt from in-game data
+local oreRarity = {
+    -- Common
+    ["Coal Ore"] = "Common",
+    ["Copper Ore"] = "Common",
+    ["Nickel Ore"] = "Common",
+    ["Zinc Ore"] = "Common",
+    ["Silver Ore"] = "Common",
+
+    -- Uncommon
+    ["Tin Ore"] = "Uncommon",
+    ["Iron Ore"] = "Uncommon",
+    ["Quartz Ore"] = "Uncommon",
+    ["Gold Ore"] = "Uncommon",
+    ["Sapphire Ore"] = "Uncommon",
+
+    -- Rare
+    ["Ruby Ore"] = "Rare",
+    ["Amethyst Ore"] = "Rare",
+    ["Emerald Ore"] = "Rare",
+    ["Cobalt Ore"] = "Rare",
+    ["Platinum Ore"] = "Rare",
+    ["Turquoise Ore"] = "Rare",
+    ["Dinosaur Bone"] = "Rare",
+    ["Diamond"] = "Rare",
+
+    -- Epic
+    ["Arrowhead"] = "Epic",
+    ["Ancient Skull"] = "Epic",
+    ["Giant Cobalt"] = "Epic",
+    ["Giant Diamond"] = "Epic",
+    ["Giant Platinum"] = "Epic",
+    ["Uranium"] = "Epic",
+    ["Treasure Chest"] = "Epic",
+    ["King's Ring"] = "Epic",
+    ["Fossil Fin"] = "Epic",
+    ["Rusty Gear"] = "Epic",
+    ["Lost Rail"] = "Epic",
+    ["Toxic Crystal"] = "Epic",
+    ["Fossil Hand"] = "Epic",
+
+    -- Legendary
+    ["Giant Fossil Fin"] = "Legendary",
+    ["Giant Treasure Chest"] = "Legendary",
+    ["Passage Key"] = "Legendary",
+    ["Ancient Arrow"] = "Legendary",
+    ["Minecart"] = "Legendary",
+    ["Ship Wheel"] = "Legendary",
+    ["Anchor"] = "Legendary",
+    ["Ancient Relic"] = "Legendary",
+    ["Ancient Coin"] = "Legendary",
+    ["King's Shield"] = "Legendary",
+    ["Alien Artifact"] = "Legendary",
+    ["Bat Wing"] = "Legendary",
+    ["Giant Rainbow Crystal"] = "Legendary",
+    ["Glowing Mushroom"] = "Legendary",
+    ["Lava Rock"] = "Legendary",
+    ["Lost Satellite"] = "Legendary",
+    ["Egyptian Sphinx"] = "Legendary",
+    ["Greek Column"] = "Legendary",
+    ["Moai Head"] = "Legendary",
+    ["Giant Uranium"] = "Legendary",
+    ["Ice Shard"] = "Legendary",
+
+    -- Mythic
+    ["King's Sword"] = "Mythic",
+    ["Pirate Ship"] = "Mythic",
+    ["Nuke"] = "Mythic",
+    ["Corrupted UFO"] = "Mythic",
+    ["Ancient Throne"] = "Mythic",
+
+    -- Godly
+    ["Dragon Skull"] = "Godly",
+    ["Meteor"] = "Godly",
+
+    -- Variants (Crystal, Shiny, Rainbow, Glacier)
+    -- Crystal
+    ["Crystal Coal Ore"] = "Common",
+    ["Crystal Copper Ore"] = "Common",
+    ["Crystal Nickel Ore"] = "Common",
+    ["Crystal Zinc Ore"] = "Common",
+    ["Crystal Silver Ore"] = "Common",
+    ["Crystal Tin Ore"] = "Uncommon",
+    ["Crystal Iron Ore"] = "Uncommon",
+    ["Crystal Quartz Ore"] = "Uncommon",
+    ["Crystal Gold Ore"] = "Uncommon",
+    ["Crystal Sapphire Ore"] = "Uncommon",
+    ["Crystal Ruby Ore"] = "Rare",
+    ["Crystal Amethyst Ore"] = "Rare",
+    ["Crystal Emerald Ore"] = "Rare",
+    ["Crystal Cobalt Ore"] = "Rare",
+    ["Crystal Platinum Ore"] = "Rare",
+    ["Crystal Turquoise Ore"] = "Rare",
+    ["Crystal Dinosaur Bone"] = "Rare",
+    ["Crystal Diamond"] = "Rare",
+    ["Crystal Arrowhead"] = "Epic",
+    ["Crystal Ancient Skull"] = "Epic",
+    ["Crystal Giant Cobalt"] = "Epic",
+    ["Crystal Giant Diamond"] = "Epic",
+    ["Crystal Giant Platinum"] = "Epic",
+    ["Crystal Uranium"] = "Epic",
+    ["Crystal Treasure Chest"] = "Epic",
+    ["Crystal King's Ring"] = "Epic",
+    ["Crystal Fossil Fin"] = "Epic",
+    ["Crystal Rusty Gear"] = "Epic",
+    ["Crystal Lost Rail"] = "Epic",
+    ["Crystal Toxic Crystal"] = "Epic",
+    ["Crystal Fossil Hand"] = "Epic",
+    ["Crystal Giant Fossil Fin"] = "Legendary",
+    ["Crystal Giant Treasure Chest"] = "Legendary",
+    ["Crystal Passage Key"] = "Legendary",
+    ["Crystal Ancient Arrow"] = "Legendary",
+    ["Crystal Minecart"] = "Legendary",
+    ["Crystal Ship Wheel"] = "Legendary",
+    ["Crystal Anchor"] = "Legendary",
+    ["Crystal Ancient Relic"] = "Legendary",
+    ["Crystal Ancient Coin"] = "Legendary",
+    ["Crystal King's Shield"] = "Legendary",
+    ["Crystal Alien Artifact"] = "Legendary",
+    ["Crystal Bat Wing"] = "Legendary",
+    ["Crystal Giant Rainbow Crystal"] = "Legendary",
+    ["Crystal Glowing Mushroom"] = "Legendary",
+    ["Crystal Lava Rock"] = "Legendary",
+    ["Crystal Lost Satellite"] = "Legendary",
+    ["Crystal Egyptian Sphinx"] = "Legendary",
+    ["Crystal Greek Column"] = "Legendary",
+    ["Crystal Moai Head"] = "Legendary",
+    ["Crystal Giant Uranium"] = "Legendary",
+    ["Crystal Ice Shard"] = "Legendary",
+    ["Crystal King's Sword"] = "Mythic",
+    ["Crystal Pirate Ship"] = "Mythic",
+    ["Crystal Nuke"] = "Mythic",
+    ["Crystal Corrupted UFO"] = "Mythic",
+    ["Crystal Ancient Throne"] = "Mythic",
+    ["Crystal Dragon Skull"] = "Godly",
+    ["Crystal Meteor"] = "Godly",
+
+    -- Shiny
+    ["Shiny Coal Ore"] = "Common",
+    ["Shiny Copper Ore"] = "Common",
+    ["Shiny Nickel Ore"] = "Common",
+    ["Shiny Zinc Ore"] = "Common",
+    ["Shiny Silver Ore"] = "Common",
+    ["Shiny Tin Ore"] = "Uncommon",
+    ["Shiny Iron Ore"] = "Uncommon",
+    ["Shiny Quartz Ore"] = "Uncommon",
+    ["Shiny Gold Ore"] = "Uncommon",
+    ["Shiny Sapphire Ore"] = "Uncommon",
+    ["Shiny Ruby Ore"] = "Rare",
+    ["Shiny Amethyst Ore"] = "Rare",
+    ["Shiny Emerald Ore"] = "Rare",
+    ["Shiny Cobalt Ore"] = "Rare",
+    ["Shiny Platinum Ore"] = "Rare",
+    ["Shiny Turquoise Ore"] = "Rare",
+    ["Shiny Dinosaur Bone"] = "Rare",
+    ["Shiny Diamond"] = "Rare",
+    ["Shiny Arrowhead"] = "Epic",
+    ["Shiny Ancient Skull"] = "Epic",
+    ["Shiny Giant Cobalt"] = "Epic",
+    ["Shiny Giant Diamond"] = "Epic",
+    ["Shiny Giant Platinum"] = "Epic",
+    ["Shiny Uranium"] = "Epic",
+    ["Shiny Treasure Chest"] = "Epic",
+    ["Shiny King's Ring"] = "Epic",
+    ["Shiny Fossil Fin"] = "Epic",
+    ["Shiny Rusty Gear"] = "Epic",
+    ["Shiny Lost Rail"] = "Epic",
+    ["Shiny Toxic Crystal"] = "Epic",
+    ["Shiny Fossil Hand"] = "Epic",
+    ["Shiny Giant Fossil Fin"] = "Legendary",
+    ["Shiny Giant Treasure Chest"] = "Legendary",
+    ["Shiny Passage Key"] = "Legendary",
+    ["Shiny Ancient Arrow"] = "Legendary",
+    ["Shiny Minecart"] = "Legendary",
+    ["Shiny Ship Wheel"] = "Legendary",
+    ["Shiny Anchor"] = "Legendary",
+    ["Shiny Ancient Relic"] = "Legendary",
+    ["Shiny Ancient Coin"] = "Legendary",
+    ["Shiny King's Shield"] = "Legendary",
+    ["Shiny Alien Artifact"] = "Legendary",
+    ["Shiny Bat Wing"] = "Legendary",
+    ["Shiny Giant Rainbow Crystal"] = "Legendary",
+    ["Shiny Glowing Mushroom"] = "Legendary",
+    ["Shiny Lava Rock"] = "Legendary",
+    ["Shiny Lost Satellite"] = "Legendary",
+    ["Shiny Egyptian Sphinx"] = "Legendary",
+    ["Shiny Greek Column"] = "Legendary",
+    ["Shiny Moai Head"] = "Legendary",
+    ["Shiny Giant Uranium"] = "Legendary",
+    ["Shiny Ice Shard"] = "Legendary",
+    ["Shiny King's Sword"] = "Mythic",
+    ["Shiny Pirate Ship"] = "Mythic",
+    ["Shiny Nuke"] = "Mythic",
+    ["Shiny Corrupted UFO"] = "Mythic",
+    ["Shiny Ancient Throne"] = "Mythic",
+    ["Shiny Dragon Skull"] = "Godly",
+    ["Shiny Meteor"] = "Godly",
+
+    -- Rainbow
+    ["Rainbow Coal Ore"] = "Common",
+    ["Rainbow Copper Ore"] = "Common",
+    ["Rainbow Nickel Ore"] = "Common",
+    ["Rainbow Zinc Ore"] = "Common",
+    ["Rainbow Silver Ore"] = "Common",
+    ["Rainbow Tin Ore"] = "Uncommon",
+    ["Rainbow Iron Ore"] = "Uncommon",
+    ["Rainbow Quartz Ore"] = "Uncommon",
+    ["Rainbow Gold Ore"] = "Uncommon",
+    ["Rainbow Sapphire Ore"] = "Uncommon",
+    ["Rainbow Ruby Ore"] = "Rare",
+    ["Rainbow Amethyst Ore"] = "Rare",
+    ["Rainbow Emerald Ore"] = "Rare",
+    ["Rainbow Cobalt Ore"] = "Rare",
+    ["Rainbow Platinum Ore"] = "Rare",
+    ["Rainbow Turquoise Ore"] = "Rare",
+    ["Rainbow Dinosaur Bone"] = "Rare",
+    ["Rainbow Diamond"] = "Rare",
+    ["Rainbow Arrowhead"] = "Epic",
+    ["Rainbow Ancient Skull"] = "Epic",
+    ["Rainbow Giant Cobalt"] = "Epic",
+    ["Rainbow Giant Diamond"] = "Epic",
+    ["Rainbow Giant Platinum"] = "Epic",
+    ["Rainbow Uranium"] = "Epic",
+    ["Rainbow Treasure Chest"] = "Epic",
+    ["Rainbow King's Ring"] = "Epic",
+    ["Rainbow Fossil Fin"] = "Epic",
+    ["Rainbow Rusty Gear"] = "Epic",
+    ["Rainbow Lost Rail"] = "Epic",
+    ["Rainbow Toxic Crystal"] = "Epic",
+    ["Rainbow Fossil Hand"] = "Epic",
+    ["Rainbow Giant Fossil Fin"] = "Legendary",
+    ["Rainbow Giant Treasure Chest"] = "Legendary",
+    ["Rainbow Passage Key"] = "Legendary",
+    ["Rainbow Ancient Arrow"] = "Legendary",
+    ["Rainbow Minecart"] = "Legendary",
+    ["Rainbow Ship Wheel"] = "Legendary",
+    ["Rainbow Anchor"] = "Legendary",
+    ["Rainbow Ancient Relic"] = "Legendary",
+    ["Rainbow Ancient Coin"] = "Legendary",
+    ["Rainbow King's Shield"] = "Legendary",
+    ["Rainbow Alien Artifact"] = "Legendary",
+    ["Rainbow Bat Wing"] = "Legendary",
+    ["Rainbow Giant Rainbow Crystal"] = "Legendary",
+    ["Rainbow Glowing Mushroom"] = "Legendary",
+    ["Rainbow Lava Rock"] = "Legendary",
+    ["Rainbow Lost Satellite"] = "Legendary",
+    ["Rainbow Egyptian Sphinx"] = "Legendary",
+    ["Rainbow Greek Column"] = "Legendary",
+    ["Rainbow Moai Head"] = "Legendary",
+    ["Rainbow Giant Uranium"] = "Legendary",
+    ["Rainbow Ice Shard"] = "Legendary",
+    ["Rainbow King's Sword"] = "Mythic",
+    ["Rainbow Pirate Ship"] = "Mythic",
+    ["Rainbow Nuke"] = "Mythic",
+    ["Rainbow Corrupted UFO"] = "Mythic",
+    ["Rainbow Ancient Throne"] = "Mythic",
+    ["Rainbow Dragon Skull"] = "Godly",
+    ["Rainbow Meteor"] = "Godly",
+
+    -- Glacier
+    ["Glacier Coal Ore"] = "Common",
+    ["Glacier Copper Ore"] = "Common",
+    ["Glacier Nickel Ore"] = "Common",
+    ["Glacier Zinc Ore"] = "Common",
+    ["Glacier Silver Ore"] = "Common",
+    ["Glacier Tin Ore"] = "Uncommon",
+    ["Glacier Iron Ore"] = "Uncommon",
+    ["Glacier Quartz Ore"] = "Uncommon",
+    ["Glacier Gold Ore"] = "Uncommon",
+    ["Glacier Sapphire Ore"] = "Uncommon",
+    ["Glacier Ruby Ore"] = "Rare",
+    ["Glacier Amethyst Ore"] = "Rare",
+    ["Glacier Emerald Ore"] = "Rare",
+    ["Glacier Cobalt Ore"] = "Rare",
+    ["Glacier Platinum Ore"] = "Rare",
+    ["Glacier Turquoise Ore"] = "Rare",
+    ["Glacier Dinosaur Bone"] = "Rare",
+    ["Glacier Diamond"] = "Rare",
+    ["Glacier Arrowhead"] = "Epic",
+    ["Glacier Ancient Skull"] = "Epic",
+    ["Glacier Giant Cobalt"] = "Epic",
+    ["Glacier Giant Diamond"] = "Epic",
+    ["Glacier Giant Platinum"] = "Epic",
+    ["Glacier Uranium"] = "Epic",
+    ["Glacier Treasure Chest"] = "Epic",
+    ["Glacier King's Ring"] = "Epic",
+    ["Glacier Fossil Fin"] = "Epic",
+    ["Glacier Rusty Gear"] = "Epic",
+    ["Glacier Lost Rail"] = "Epic",
+    ["Glacier Toxic Crystal"] = "Epic",
+    ["Glacier Fossil Hand"] = "Epic",
+    ["Glacier Giant Fossil Fin"] = "Legendary",
+    ["Glacier Giant Treasure Chest"] = "Legendary",
+    ["Glacier Passage Key"] = "Legendary",
+    ["Glacier Ancient Arrow"] = "Legendary",
+    ["Glacier Minecart"] = "Legendary",
+    ["Glacier Ship Wheel"] = "Legendary",
+    ["Glacier Anchor"] = "Legendary",
+    ["Glacier Ancient Relic"] = "Legendary",
+    ["Glacier Ancient Coin"] = "Legendary",
+    ["Glacier King's Shield"] = "Legendary",
+    ["Glacier Alien Artifact"] = "Legendary",
+    ["Glacier Bat Wing"] = "Legendary",
+    ["Glacier Giant Rainbow Crystal"] = "Legendary",
+    ["Glacier Glowing Mushroom"] = "Legendary",
+    ["Glacier Lava Rock"] = "Legendary",
+    ["Glacier Lost Satellite"] = "Legendary",
+    ["Glacier Egyptian Sphinx"] = "Legendary",
+    ["Glacier Greek Column"] = "Legendary",
+    ["Glacier Moai Head"] = "Legendary",
+    ["Glacier Giant Uranium"] = "Legendary",
+    ["Glacier Ice Shard"] = "Legendary",
+    ["Glacier King's Sword"] = "Mythic",
+    ["Glacier Pirate Ship"] = "Mythic",
+    ["Glacier Nuke"] = "Mythic",
+    ["Glacier Corrupted UFO"] = "Mythic",
+    ["Glacier Ancient Throne"] = "Mythic",
+    ["Glacier Dragon Skull"] = "Godly",
+    ["Glacier Meteor"] = "Godly",
+}
+
+local rarityColors = {
+    ["Common"] = Color3.fromRGB(220, 220, 220),
+    ["Uncommon"] = Color3.fromRGB(60, 200, 60),
+    ["Rare"] = Color3.fromRGB(60, 120, 220),
+    ["Epic"] = Color3.fromRGB(160, 60, 200),
+    ["Legendary"] = Color3.fromRGB(255, 215, 0),
+    ["Mythic"] = Color3.fromRGB(255, 40, 40),
+    ["Godly"] = Color3.fromRGB(0, 255, 255),
+    ["Transcendent"] = Color3.fromRGB(0, 255, 255), -- fallback for legacy
+    ["Unknown"] = Color3.fromRGB(128, 128, 128),
+}
+
+local rarityOrder = {
+    ["Godly"] = 0,
+    ["Transcendent"] = 0, -- fallback for legacy
+    ["Mythic"] = 1,
+    ["Legendary"] = 2,
+    ["Epic"] = 3,
+    ["Rare"] = 4,
+    ["Uncommon"] = 5,
+    ["Common"] = 6,
+    ["Unknown"] = 7,
+}
+
+local LEGENDARY_LEVEL = rarityOrder["Legendary"]
+
+local function getOreBaseName(name)
+	return name:match("^(.-)_") or name
+end
+
+local function updateTableDisplay()
+	for _, child in ipairs(scroll:GetChildren()) do
+		if child:IsA("TextButton") then child:Destroy() end
+	end
+	local count = 0
+	local search = searchBox.Text:lower()
+	local sorted = {}
+	for name, _ in pairs(collectedNames) do
+		local base = getOreBaseName(name)
+		local rarity = oreRarity[base] or "Unknown"
+		local rOrder = rarityOrder[rarity] or 7
+		if (not ignoreYleobebi or rOrder <= LEGENDARY_LEVEL) and (search == "" or name:lower():find(search, 1, true)) then
+			table.insert(sorted, {name = name, rarity = rarity, rOrder = rOrder})
+		end
+	end
+	-- anbanis mixedvit sortireba
+	table.sort(sorted, function(a, b)
+		if a.rOrder ~= b.rOrder then
+			return a.rOrder < b.rOrder
+		end
+		return a.name < b.name
+	end)
+	for _, item in ipairs(sorted) do
+		count = count + 1
+		local entry = Instance.new("TextButton")
+		entry.Size = UDim2.new(1, 0, 0, 28)
+		entry.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		entry.TextColor3 = rarityColors[item.rarity] or Color3.new(1, 1, 1)
+		entry.Font = Enum.Font.SourceSans
+		entry.TextSize = 16
+		entry.TextXAlignment = Enum.TextXAlignment.Left
+		entry.Text = item.name
+		entry.Parent = scroll
+		entry.MouseButton1Click:Connect(function()
+			local miningRemote = ReplicatedStorage:WaitForChild("shared/network/MiningNetwork@GlobalMiningEvents"):WaitForChild("CollectItem")
+			miningRemote:FireServer(item.name)
+			collectedNames[item.name] = nil
+			updateTableDisplay()
+		end)
+	end
+	scroll.CanvasSize = UDim2.new(0, 0, 0, count * 30)
+end
+
+ignoreBtn.MouseButton1Click:Connect(function()
+	ignoreYleobebi = not ignoreYleobebi
+	if ignoreYleobebi then
+		ignoreBtn.Text = "Ignore Yleobebi: ON"
+		ignoreBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+	else
+		ignoreBtn.Text = "Ignore Yleobebi: OFF"
+		ignoreBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	end
+	updateTableDisplay()
+end)
+
+searchBox:GetPropertyChangedSignal("Text"):Connect(updateTableDisplay)
+
+-- Keybind J to toggle GUI
+local UIS = game:GetService("UserInputService")
+UIS.InputBegan:Connect(function(input, processed)
+	if not processed and input.KeyCode == Enum.KeyCode.J then
+		screenGui.Enabled = not screenGui.Enabled
+	end
+end)
+
+-- Listen logic
+local function onItemAdded(item)
+	if item and item.Name and not collectedNames[item.Name] then
+		collectedNames[item.Name] = true
+		updateTableDisplay()
+	end
+end
+
+listenBtn.MouseButton1Click:Connect(function()
+	if listening then return end
+	listening = true
+	local itemsFolder = workspace:WaitForChild("Items")
+	-- Add all current items
+	for _, item in ipairs(itemsFolder:GetChildren()) do
+		if item and item.Name and not collectedNames[item.Name] then
+			collectedNames[item.Name] = true
+		end
+	end
+	updateTableDisplay()
+	itemConn = itemsFolder.ChildAdded:Connect(onItemAdded)
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+	if not listening then return end
+	listening = false
+	if itemConn then itemConn:Disconnect() itemConn = nil end
+end)
+
+clearBtn.MouseButton1Click:Connect(function()
+	for k in pairs(collectedNames) do collectedNames[k] = nil end
+	updateTableDisplay()
+end)
