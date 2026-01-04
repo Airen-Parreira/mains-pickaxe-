@@ -518,10 +518,10 @@ end
 ignoreBtn.MouseButton1Click:Connect(function()
 	ignoreYleobebi = not ignoreYleobebi
 	if ignoreYleobebi then
-		ignoreBtn.Text = "Ignore Yleobebi: ON"
+		ignoreBtn.Text = "Ignore Trash: ON"
 		ignoreBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
 	else
-		ignoreBtn.Text = "Ignore Yleobebi: OFF"
+		ignoreBtn.Text = "Ignore Trash: OFF"
 		ignoreBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 	end
 	updateTableDisplay()
